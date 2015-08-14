@@ -25,7 +25,8 @@ class RecursiveDissector(img: BufferedImage) {
   def findPossibleSplit(box: Box): List[Split] = {
     val dissector = new PngDissector(img)
     val guesses = dissector.findSplitGuesses(box)
-    guesses
+    val (vert, horiz) = guesses.partition(_.isVertical)
+    vert ++ horiz
   }
 
   def split(box: Box): List[Box] = {

@@ -17,6 +17,12 @@ class FeatureVector(val split: Split, val box: Box) {
     box.copy(yStart = split.end)
   }
 
+  val centrality = abs(log(if(split.isVertical) {
+    (boxChild1.width + 1).toDouble / (boxChild2.width + 1)
+  } else {
+    (boxChild1.height + 1).toDouble / (boxChild2.height + 1)
+  }))
+
   val splitWidth = split.width.toDouble
   val aspectRatio1 = boxChild1.approxAspectRatio
   val aspectRatio2 = boxChild2.approxAspectRatio
@@ -38,7 +44,7 @@ class FeatureVector(val split: Split, val box: Box) {
     val aspectRatioWeight = 0
     val blankCoverageWeight = 0
 
-    if (smallestDimension > 2 && maxLogAspectRatio < 10/*0.47*/) {
+    if (smallestDimension > 100 && (maxLogAspectRatio < 0.6 || centrality < 0.4) ) {
       if (splitWidth.toDouble == 0) {
         1
       } else {
