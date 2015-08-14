@@ -169,7 +169,9 @@ object PngDissector {
 object PngDissectorApp extends App {
 
   val files = if (args.length == 1 && new File(args(0)).isDirectory) {
-    new File(args(0)).listFiles().filter(_.isFile).map(_.getAbsolutePath).toList
+    new File(args(0)).listFiles()
+        .filter(f => f.isFile && f.getPath.endsWith("png")).map(_.getAbsolutePath)
+        .toList
   } else {
     args.toList
   }
