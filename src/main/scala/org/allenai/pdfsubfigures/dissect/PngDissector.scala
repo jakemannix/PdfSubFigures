@@ -85,10 +85,7 @@ class PngDissector(val img: BufferedImage) {
   }
 
   def findWhiteRowSplits(box: Box): List[Split] = {
-    val splits = PngDissector.rowsToSplits(findWhiteColumns(box).toArray, isVertical = false)
-    if (true) {
-      println("")
-    }
+    val splits = PngDissector.rowsToSplits(findWhiteRows(box).toArray, isVertical = false)
     splits
   }
 
@@ -145,20 +142,31 @@ object PngDissector {
   }
 
   def meanPixelBrightness(img: BufferedImage, box: Box): Double = {
-
+    var total = 0.0
+    for (x <- 0 until box.width; y <- 0 until box.height) {
+      val rgb = img.getRGB(x,y)
+      val red   = (rgb >>> 16) & 0xFF
+      val green = (rgb >>>  8) & 0xFF
+      val blue  = (rgb >>>  0) & 0xFF
+      val brightness = (red.toDouble + green.toDouble + blue.toDouble)/3
+      total += brightness
+    }
+    total /= (box.height*box.width)
+    total
   }
 
 }
 
 object PngDissectorApp extends App {
-  val fileName = args(0)
-  val outFileName = fileName.replace("png", "redlines.png")
-  val pngDissector = new PngDissector(ImageIO.read(new File(fileName)))
-  val img = pngDissector.img
-  val otherDissector = new RecursiveDissector(pngDissector.img)
-  val startBox = Box(xStart = 0, yStart = 0,
-    xEnd = img.getWidth, yEnd = img.getHeight)
-  val outBoxes = otherDissector.split(startBox)
-  val redImg = BoxWriter.writeBoxes(img, outBoxes)
-  ImageIO.write(redImg, "png", new File(outFileName))
+  args.foreach { fileName =>
+    val outFileName = fileName.replace("png", "redlines.png")
+    val pngDissector = new PngDissector(ImageIO.read(new File(fileName)))
+    val img = pngDissector.img
+    val otherDissector = new RecursiveDissector(pngDissector.img)
+    val startBox = Box(xStart = 0, yStart = 0,
+      xEnd = img.getWidth, yEnd = img.getHeight)
+    val outBoxes = otherDissector.split(startBox)
+    val redImg = BoxWriter.writeBoxes(img, outBoxes)
+    ImageIO.write(redImg, "png", new File(outFileName))
+  }
 }

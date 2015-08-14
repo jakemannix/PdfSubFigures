@@ -1,27 +1,40 @@
 package org.allenai.pdfsubfigures.dissect
 
+import java.awt.image.BufferedImage
+
 import org.allenai.pdfsubfigures.geometry.{Box, Split}
+import math._
 
-class FeatureVector(val split: Split, val box: Box) {
+class FeatureVector(val splits: List[Split], val box: Box, val img: BufferedImage) {
 
+  val splitVertical = splits(0).isVertical
 
-  val boxChild1 = if(split.isVertical) {
-    box.copy(xEnd = split.start)
-  } else {
-    box.copy(yEnd = split.start)
+  val childBoxes = RecursiveDissector.subFiguresFor(box, splits)
+
+  var meanBoxWidth = 0.0
+  for (childBox <- childBoxes) {
+    meanBoxWidth += (if (splitVertical) {childBox.width} else {childBox.height})
   }
-  val boxChild2 = if(split.isVertical) {
-    box.copy(xStart = split.end)
-  } else {
-    box.copy(yStart = split.end)
-  }
+  meanBoxWidth/=childBoxes.length
 
-  val width = split.width.toDouble
-  val aspectRatio = math.max(math.abs(math.log(boxChild1.height.toDouble/boxChild1.width.toDouble)),
-    math.abs(math.log(boxChild2.height.toDouble/boxChild2.width.toDouble)))
-  val blankCoverage = split.width.toDouble / (if (split.isVertical) box.width.toDouble else box.height.toDouble)
-  val absoluteArea = math.min(boxChild1.width*boxChild1.height.toDouble, boxChild2.width*boxChild2.height.toDouble)
-  val smallestDimension = math.min(math.min(boxChild1.height, boxChild1.width),math.min(boxChild2.height, boxChild2.width))
+  val symmetry = childBoxes.map(x => abs(log((if (splitVertical) {x.width} else {x.height})/meanBoxWidth))).max
+
+  val splitWidth = splits.map(_.width).sum
+//  val aspectRatio1 = boxChild1.approxAspectRatio
+//  val aspectRatio2 = boxChild2.approxAspectRatio
+//  val maxLogAspectRatio = max(abs(log(aspectRatio1)), abs(log(aspectRatio2)))
+//  val blankCoverage = split.width.toDouble / (if (split.isVertical) box.width.toDouble else box.height.toDouble)
+//  val absoluteArea = min(boxChild1.width*boxChild1.height.toDouble, boxChild2.width*boxChild2.height.toDouble)
+  val smallestDimension = childBoxes.map(x => (if (splitVertical) {x.width} else {x.height})).min
+
+  val boxBrightnessList = childBoxes.map(x => PngDissector.meanPixelBrightness(img, x))
+
+  val meanBoxBrigthness = boxBrightnessList.sum/childBoxes.length
+  val maxBrightnessDifference = boxBrightnessList.map(x => abs(x - meanBoxBrigthness)).max
+
+
+
+//  val brightnessDifference = abs(PngDissector.meanPixelBrightness(img, boxChild1)/ - PngDissector.meanPixelBrightness(img,boxChild2))
 
   /**
    * Given a feature vector produces a score
@@ -32,8 +45,16 @@ class FeatureVector(val split: Split, val box: Box) {
     val widthWeight = 1
     val aspectRatioWeight = 0
     val blankCoverageWeight = 0
-
-    return if (smallestDimension > 20 && aspectRatio < 0.47) widthWeight*width.toDouble else 0
-//    return width
+//&& symmetry < 0.4 && maxBrightnessDifference < 2
+    if (smallestDimension > 10 ) {
+      if (splitWidth.toDouble == 0) {
+        1
+      } else {
+//        (maxBrightnessDifference*(-1)+2) *
+          splitWidth.toDouble
+      }
+    } else {
+      0
+    }
   }
 }

@@ -2,7 +2,7 @@ package org.allenai.pdfsubfigures.dissect
 
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.{File, FileWriter, BufferedWriter}
+import java.io.{PrintWriter, File, FileWriter, BufferedWriter}
 
 import spray.json._
 import org.allenai.pdfsubfigures.geometry.Box
@@ -11,17 +11,7 @@ object BoxWriter extends DefaultJsonProtocol {
 
   def drawBox(img: BufferedImage, box: Box): BufferedImage = {
     def setRed(x: Int, y: Int) {
-      try {
-        if (true || (x > 0 && x < img.getWidth && y > 0 && y < img.getHeight)) {
-          img.setRGB(x, y, Color.RED.getRGB)
-        }
-      } catch {
-        case e: Exception => {
-          val s = s"$x, $y, ${img.getWidth}, ${img.getHeight}"
-          println(s, e)
-          throw e
-        }
-      }
+      img.setRGB(x, y, Color.RED.getRGB)
     }
     (box.xStart until box.xEnd).foreach { x =>
       setRed(x, box.yStart)
@@ -42,9 +32,16 @@ object BoxWriter extends DefaultJsonProtocol {
   def boxToJson(box: Box, outpath: String) = {
     implicit val boxFormat = jsonFormat(Box.apply, "xStart", "yStart", "xEnd", "yEnd")
     val jsonFromBox =  box.toJson
-    val w = new BufferedWriter(new FileWriter(outpath))
+    val w = new PrintWriter(outpath)
     w.write(jsonFromBox.prettyPrint)
     w.close
+  }
+
+  def writeAllBoxes(boxes: List[Box], outPath: String) = {
+    implicit val boxFormat = jsonFormat(Box.apply, "xStart", "yStart", "xEnd", "yEnd")
+    val w = new PrintWriter(outPath)
+    val s = boxes.map(_.toJson.prettyPrint).mkString("[", ", ", "]")
+    w.println(s)
   }
 
   def boxFromAnnotation(inpath: String) : Seq[Box] = {
