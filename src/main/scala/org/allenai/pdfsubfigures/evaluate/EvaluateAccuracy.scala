@@ -20,7 +20,7 @@ object EvaluateAccuracy {
   // True positives, false positives, false negatives
   def evalFoundBoxes(foundBoxes: List[Box], trueBoxes: List[Box]): (Int, Int, Int) = {
     var truePositives = 0
-    val intersectionThreshold = .95
+    val intersectionThreshold = .75
     for (foundBox <- foundBoxes){
       breakable {
         for (trueBox <- trueBoxes) {
@@ -53,17 +53,38 @@ object EvaluateAccuracy {
 object Evaluator extends App {
 
   val perPngEvaluations =
-    listPngs(args(0)).map { pngFile =>
+    listPngs(args(0)).flatMap { pngFile =>
       val goldFile = goldFileFor(pngFile)
-      val predictedBoxes = RecursiveDissector.findBoxes(pngFile.getAbsolutePath)
-      val goldBoxes = BoxWriter.boxFromAnnotation(goldFile.getAbsolutePath)
-      val (truePos, falsePos, falseNeg) =
-        EvaluateAccuracy.evalFoundBoxes(predictedBoxes, goldBoxes.toList)
-      val result = s"${pngFile.getName}: TP = $truePos, FP = $falsePos, FN = $falseNeg"
-      println(result)
-      (pngFile.getName, truePos, falsePos, falseNeg)
+      if (!goldFile.exists()) {
+        None
+      } else {
+        val predictedBoxes = RecursiveDissector.findBoxes(pngFile.getAbsolutePath)
+        val unGoldBoxes = BoxWriter.boxFromAnnotation(goldFile.getAbsolutePath)
+        val goldBoxes =
+          unGoldBoxes.map(RecursiveDissector.crop(pngFile.getAbsolutePath))
+        val (truePos, falsePos, falseNeg) =
+          EvaluateAccuracy.evalFoundBoxes(predictedBoxes, goldBoxes.toList)
+        val (trueUnPos, falseUnPos, falseUnNeg) =
+          EvaluateAccuracy.evalFoundBoxes(predictedBoxes, unGoldBoxes.toList)
+        val result =
+          s"cropped: ${pngFile.getName}: TP = $truePos, FP = $falsePos, FN = $falseNeg"
+        val unResult =
+          s"noCropp: ${pngFile.getName}: TP = $trueUnPos, FP = $falseUnPos, FN = $falseUnNeg"
+        if (truePos == trueUnPos && falsePos == falseUnPos && falseNeg == falseUnNeg) {
+          //print(".")
+        } else {
+          //println("")
+          //println(result)
+          println(unResult)
+        }
+        Some(pngFile.getName, trueUnPos, falseUnPos, falseUnNeg)
+      }
     }
 
+  val (ignored, truePos, falsePos, falseNeg) =
+    perPngEvaluations.reduce((t1, t2) => (t1._1, t1._2 + t2._2, t1._3 + t2._3, t1._4 + t2._4))
+
+  println(s"TP: $truePos, FP: $falsePos, FN: $falseNeg")
 
   def goldFileFor(pngFile: File): File = {
     new File(pngFile.getAbsolutePath.replace("png", "png-annotation.json"))
