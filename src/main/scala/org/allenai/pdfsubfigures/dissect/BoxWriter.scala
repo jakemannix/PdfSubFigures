@@ -57,7 +57,7 @@ object BoxWriter extends DefaultJsonProtocol {
     for (annotation <- annotations) yield {
       val boxJson = annotation.asJsObject.fields("bounds").asJsObject.fields("coords").asInstanceOf[JsArray]
 
-      println(boxJson.elements(0).asJsObject.fields("x").toString.toDouble.floor.toInt)
+      //println(boxJson.elements(0).asJsObject.fields("x").toString.toDouble.floor.toInt)
 
       Box(boxJson.elements(0).asJsObject.fields("x").toString.toDouble.floor.toInt,
         boxJson.elements(0).asJsObject.fields("y").toString.toDouble.floor.toInt,

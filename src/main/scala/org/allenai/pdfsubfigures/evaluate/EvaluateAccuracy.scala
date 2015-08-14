@@ -58,17 +58,22 @@ object EvaluateAccuracy {
 object Evaluator extends App {
 
   val perPngEvaluations =
-    listPngs(args(0)).map { pngFile =>
+    listPngs(args(0)).flatMap { pngFile =>
       val goldFile = goldFileFor(pngFile)
-      val predictedBoxes = RecursiveDissector.findBoxes(pngFile.getAbsolutePath)
-      val goldBoxes = BoxWriter.boxFromAnnotation(goldFile.getAbsolutePath)
-      val (truePos, falsePos, falseNeg) =
-        EvaluateAccuracy.evalFoundBoxes(predictedBoxes, goldBoxes.toList)
-      val result = s"${pngFile.getName}: TP = $truePos, FP = $falsePos, FN = $falseNeg"
-      println(result)
-      (pngFile.getName, truePos, falsePos, falseNeg)
+      if (!goldFile.exists()) {
+        None
+      } else {
+        val predictedBoxes = RecursiveDissector.findBoxes(pngFile.getAbsolutePath)
+        val goldBoxes = BoxWriter.boxFromAnnotation(goldFile.getAbsolutePath)
+        val (truePos, falsePos, falseNeg) =
+          EvaluateAccuracy.evalFoundBoxes(predictedBoxes, goldBoxes.toList)
+        val result = s"${pngFile.getName}: TP = $truePos, FP = $falsePos, FN = $falseNeg"
+        println(result)
+        Some(pngFile.getName, truePos, falsePos, falseNeg)
+      }
     }
 
+  
 
   def goldFileFor(pngFile: File): File = {
     new File(pngFile.getAbsolutePath.replace("png", "png-annotation.json"))

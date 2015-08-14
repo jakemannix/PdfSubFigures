@@ -58,6 +58,7 @@ object RecursiveDissector {
     val img = pngDissector.img
     val otherDissector = new RecursiveDissector(pngDissector.img)
     val (vertSplits, horizSplits) = otherDissector.findPossibleSplit(box).partition(_.isVertical)
+
     ???
   }
 
