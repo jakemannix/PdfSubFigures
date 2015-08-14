@@ -58,7 +58,7 @@ object getJSONPages {
       val images = pageSet.zip(imageFiles.map(x => ImageIO.read(x))).toMap[Int, BufferedImage]
 
       val bbList = figList.map(x => x.fields("ImageBB").asInstanceOf[JsArray].elements.map(_.toString().toInt))
-      
+
       for (i <- 0 until figList.length) {
         val croppedFig = images(pageList(i)).getSubimage(bbList(i)(0) * 2,
           bbList(i)(1) * 2,
