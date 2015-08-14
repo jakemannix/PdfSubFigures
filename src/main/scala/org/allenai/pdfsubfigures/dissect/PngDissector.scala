@@ -2,7 +2,7 @@ package org.allenai.pdfsubfigures.dissect
 
 import java.awt.Color
 import java.awt.image.BufferedImage
-import java.io.File
+import java.io.{FilenameFilter, File}
 import javax.imageio.ImageIO
 
 import org.allenai.pdfsubfigures.geometry._
@@ -143,7 +143,12 @@ object PngDissector {
 }
 
 object PngDissectorApp extends App {
-  args.foreach { fileName =>
+  val files = if (args.length == 1 && new File(args(0)).isDirectory) {
+    new File(args(0)).listFiles().filter(_.isFile).map(_.getAbsolutePath).toList
+  } else {
+    args.toList
+  }
+  files.foreach { fileName =>
     val outFileName = fileName.replace("png", "redlines.png")
     val outJsonFile = fileName.replace("png", "boxes.json")
     val pngDissector = new PngDissector(ImageIO.read(new File(fileName)))

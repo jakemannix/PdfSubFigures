@@ -54,4 +54,12 @@ object RecursiveDissector {
       xEnd = img.getWidth, yEnd = img.getHeight)
     otherDissector.split(startBox)
   }
+
+  def crop(pngFileName: String)(box: Box): Box = {
+    val pngDissector = new PngDissector(ImageIO.read(new File(pngFileName)))
+    val img = pngDissector.img
+    val otherDissector = new RecursiveDissector(pngDissector.img)
+    val (vertSplits, horizSplits) = otherDissector.findPossibleSplit(box).partition(_.isVertical)
+
+  }
 }
