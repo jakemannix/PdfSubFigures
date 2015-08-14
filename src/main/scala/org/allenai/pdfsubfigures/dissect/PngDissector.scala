@@ -128,17 +128,26 @@ object PngDissector {
   def apply(fileName: String) = new PngDissector(ImageIO.read(new File(fileName)))
 
   def rowsToSplits(ints: Array[Int], isVertical: Boolean): List[Split] = {
-    val pairs =
-      ints.zipWithIndex.map { case(v,i) => if (i==0) { (v,v) } else { (v, v - ints(i-1) - 1)} }
-    val flattened = pairs.flatMap {
-      case ((x, 0)) => None
-      case ((x, offset)) => Some((x, offset))
+    if (ints.isEmpty) {
+      List.empty[Split]
+    } else {
+      val pairs =
+        ints.zipWithIndex.map { case (v, i) => if (i == 0) {
+          (v, v)
+        } else {
+          (v, v - ints(i - 1) - 1)
+        }
+        }
+      val flattened = pairs.flatMap {
+        case ((x, 0)) => None
+        case ((x, offset)) => Some((x, offset))
+      }
+      val magic = flattened.flatMap(p => List(p._1 - p._2 - 1, p._1))
+      val res = (List(ints(0)) ++ magic.toList ++ List(ints(ints.length - 1))).grouped(2).map(l =>
+        Split(l(0), l(1), isVertical)
+      ).toList
+      res.filterNot(s => s.start < 0 || s.end < 0)
     }
-    val magic = flattened.flatMap(p => List(p._1 - p._2 - 1, p._1))
-    val res = (List(ints(0)) ++ magic.toList ++ List(ints(ints.length - 1))).grouped(2).map(l =>
-      Split(l(0), l(1), isVertical)
-    ).toList
-    res.filterNot(s => s.start < 0 || s.end < 0)
   }
 
   def meanPixelBrightness(img: BufferedImage, box: Box): Double = {

@@ -10,8 +10,7 @@ class RecursiveDissector(img: BufferedImage) {
 
   def bestSplits(splits: List[Split], box: Box) : List[Split] = {
 
-    val splitTupleLists = splits.toSet[Split].map(x => List(x)).toList
-    //++ splits.toSet.subsets(2).map(_.toList).toList
+    val splitTupleLists = splits.toSet[Split].map(x => List(x)).toList ++ splits.toSet.subsets(2).map(_.toList).toList
     val features = splitTupleLists.map(x => (x, new FeatureVector(x, box, img)))
 //    splits.map(x => println(x.width))
     val score = features.map(x => (x._1, x._2.score()))
