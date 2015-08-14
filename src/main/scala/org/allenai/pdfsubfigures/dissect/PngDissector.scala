@@ -5,6 +5,8 @@ import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
 
+import org.allenai.pdfsubfigures.geometry._
+
 import scala.collection.immutable.IndexedSeq
 
 
@@ -73,25 +75,14 @@ class PngDissector(val img: BufferedImage) {
     ???
   }
 
-  def bestSplit(splits: List[(Int, Int)]) : Option[(Int, Int)] = {
+  def bestSplit(splits: List[Split], box: Box) : Option[Split] = {
 
-    val features = splits.map(x => getFeatures(x))
-    val score = features.map(x => x.score())
-    val threshold = 5
-    val candidate = score.reduceLeft((x, y) => if (x > y) x else y)
-    if (candidate > threshold) Some(splits(score.indexOf(candidate))) else None
+    val features = splits.map(x => (x, new FeatureVector(x, box)))
+    val score = features.map(x => (x._1, x._2.score()))
+    val threshold = 10
+    val candidate = score.maxBy(_._2)
+    if (candidate._2 > threshold) Some(candidate._1) else None
   }
-
-  /**
-   * @param split
-   * @return a list of relevant features
-   */
-  def getFeatures(split: (Int, Int)) : FeatureVector = {
-
-    ???
-  }
-
-
 
   def reddenWhiteColumns(xStart: Int = 0,
       yStart: Int = 0, xEnd: Int = img.getWidth - 1, yEnd: Int = img.getHeight - 1) = {
