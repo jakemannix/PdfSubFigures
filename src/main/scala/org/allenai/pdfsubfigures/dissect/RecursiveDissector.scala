@@ -10,7 +10,10 @@ class RecursiveDissector(img: BufferedImage) {
 
   def bestSplits(splits: List[Split], box: Box) : List[Split] = {
 
-    val splitTupleLists = splits.toSet[Split].map(x => List(x)).toList ++ splits.toSet.subsets(2).map(_.toList).toList
+    val verticleSplitTupleList = splits.filter(x => x.isVertical).toSet.subsets(2).map(_.toList).toList
+    val horizontalSplitTupleList = splits.filter(x => !x.isVertical).toSet.subsets(2).map(_.toList).toList
+
+    val splitTupleLists = splits.toSet[Split].map(x => List(x)).toList ++ verticleSplitTupleList ++ horizontalSplitTupleList
     val features = splitTupleLists.map(x => (x, new FeatureVector(x, box, img)))
 //    splits.map(x => println(x.width))
     val score = features.map(x => (x._1, x._2.score()))
@@ -61,6 +64,11 @@ object RecursiveDissector {
   }
 
   def subFiguresFor(box: Box, splits: List[Split]): List[Box] = {
+
+//    if (splits.length > 1) {
+//      println("deugging")
+//    }
+
     val childBoxes = for (i <- 0 to splits.length) yield {
       if (splits(0).isVertical) {
         if (i == 0) {
