@@ -55,13 +55,31 @@ object RecursiveDissector {
     otherDissector.split(startBox)
   }
 
-  def crop(pngFileName: String)(box: Box): Box = {
+  def crop(pngFileName: String)(scaryBox: Box): Box = {
     val pngDissector = new PngDissector(ImageIO.read(new File(pngFileName)))
     val img = pngDissector.img
+    val box = scaryBox.copy(
+      xStart = Math.max(1, scaryBox.xStart),
+      yStart = Math.max(1, scaryBox.yStart),
+      xEnd = Math.min(img.getWidth - 1, scaryBox.xEnd),
+      yEnd = Math.min(img.getHeight - 1, scaryBox.yEnd))
     val otherDissector = new RecursiveDissector(pngDissector.img)
     val (vertSplits, horizSplits) = otherDissector.findPossibleSplit(box).partition(_.isVertical)
-
-    ???
+    if (vertSplits.isEmpty || horizSplits.isEmpty) {
+      box
+    } else {
+      val firstVertSplit = vertSplits.sortBy(_.end).head
+      val lastVertSplit = vertSplits.sortBy(-_.start).head
+      val firstHorizSplit = horizSplits.sortBy(_.end).head
+      val lastHorizSplit = horizSplits.sortBy(-_.start).head
+      val newBox = Box(
+        xStart = firstHorizSplit.end,
+        xEnd = lastHorizSplit.start,
+        yStart = firstVertSplit.end,
+        yEnd = lastVertSplit.start
+      )
+      newBox
+    }
   }
 
   def subFiguresFor(box: Box, splits: List[Split]): List[Box] = {
