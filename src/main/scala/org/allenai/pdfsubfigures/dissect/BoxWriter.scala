@@ -10,14 +10,26 @@ import org.allenai.pdfsubfigures.geometry.Box
 object BoxWriter extends DefaultJsonProtocol {
 
   def drawBox(img: BufferedImage, box: Box): BufferedImage = {
-
+    def setRed(x: Int, y: Int) {
+      try {
+        if (true || (x > 0 && x < img.getWidth && y > 0 && y < img.getHeight)) {
+          img.setRGB(x, y, Color.RED.getRGB)
+        }
+      } catch {
+        case e: Exception => {
+          val s = s"$x, $y, ${img.getWidth}, ${img.getHeight}"
+          println(s, e)
+          throw e
+        }
+      }
+    }
     (box.xStart until box.xEnd).foreach { x =>
-      img.setRGB(x, box.yStart, Color.RED.getRGB)
-      img.setRGB(x, box.yEnd, Color.RED.getRGB)
+      setRed(x, box.yStart + 1)
+      setRed(x, box.yEnd - 1)
     }
     (box.yStart until box.yEnd).foreach { y =>
-      img.setRGB(box.xStart, y, Color.RED.getRGB)
-      img.setRGB(box.xEnd, y, Color.RED.getRGB)
+      setRed(box.xStart + 1, y)
+      setRed(box.xEnd - 1, y)
     }
     img
   }
