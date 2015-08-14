@@ -5,10 +5,16 @@ import org.allenai.pdfsubfigures.geometry.{Box, Split}
 class FeatureVector(val split: Split, val box: Box) {
 
 
-  val boxChild1 = if(split.isVertical) {Box(box.xStart, split.start, box.yStart, box.yEnd) }
-                  else {Box(box.xStart, box.xEnd, box.yStart, split.start)}
-  val boxChild2 = if(split.isVertical) {Box(split.end, box.xEnd, box.yStart, box.yEnd) }
-                  else {Box(box.xStart, box.xEnd, split.end, box.yEnd)}
+  val boxChild1 = if(split.isVertical) {
+    box.copy(xEnd = split.start)
+  } else {
+    box.copy(yEnd = split.start)
+  }
+  val boxChild2 = if(split.isVertical) {
+    box.copy(xStart = split.end)
+  } else {
+    box.copy(yStart = split.end)
+  }
 
   val width = split.width.toDouble
   val aspectRatio = math.max(math.abs(math.log(boxChild1.height.toDouble/boxChild1.width.toDouble)),
