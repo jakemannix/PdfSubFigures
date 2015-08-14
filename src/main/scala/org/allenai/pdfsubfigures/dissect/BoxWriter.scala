@@ -15,7 +15,13 @@ object BoxWriter extends DefaultJsonProtocol {
 
   def drawBox(img: BufferedImage, box: Box, color: Color): BufferedImage = {
     def setRed(x: Int, y: Int) {
-      img.setRGB(x, y, color.getRGB)
+      try {
+        img.setRGB(math.max(x,0), math.max(y,0), color.getRGB)
+      } catch {
+        case e: Exception => {
+          println("x: " + x + " y: " + y)
+        }
+      }
     }
     (box.xStart until box.xEnd).foreach { x =>
       setRed(x, box.yStart)
@@ -76,7 +82,8 @@ object BoxWriter extends DefaultJsonProtocol {
 
     var output = new BufferedImage(img.getWidth, img.getHeight, BufferedImage.TYPE_INT_RGB)
     for(a <- annotation) {
-      output = drawBox(img, a, Color.BLUE)
+      val newA = Box(Math.max(a.xStart,1),Math.max(a.yStart,1),Math.min(a.xEnd,img.getWidth-2),Math.min(a.yEnd,img.getHeight-2))
+      output = drawBox(img, newA, Color.BLUE)
     }
     for (r <- result) {
       output = drawBox(img, r, Color.RED)

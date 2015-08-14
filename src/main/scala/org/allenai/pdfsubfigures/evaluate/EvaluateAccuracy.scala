@@ -13,23 +13,7 @@ import scala.util.control.Breaks._
 object EvaluateAccuracy {
 
   def main(args: Array[String]): Unit = {
-    /*
-    println("hello")
-    val bb1 = new Box(1,1,6,6)
-    val bb2 = new Box(2,2,6,6)
-    println(boxOverlap(bb1,bb2))
-    println(evalFoundBoxes(List(bb1,bb2),List(bb1,bb2)))
-    println(evalFoundBoxes(List(bb1,bb2),List(bb1)))
-    */
-
-    val img = ImageIO.read(new File(args(0)))
-    val results = BoxWriter.readAllBoxes(args(1))
-    val annotations = BoxWriter.boxFromAnnotation(args(2))
-    val outpath = args(4)
-
-    if (args(3).toBoolean) {
-      BoxWriter.visualizeResults(img, results, annotations, outpath)
-    }
+    
 
   }
 

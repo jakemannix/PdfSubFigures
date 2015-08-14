@@ -170,7 +170,7 @@ object PngDissectorApp extends App {
 
   val files = if (args.length == 1 && new File(args(0)).isDirectory) {
     new File(args(0)).listFiles()
-        .filter(f => f.isFile && f.getPath.endsWith("png") && !f.getPath.endsWith("redlines.png")).map(_.getAbsolutePath)
+        .filter(f => f.isFile && f.getPath.endsWith("png") && !f.getPath.endsWith("redlines.png") && !f.getPath.endsWith("output.png")).map(_.getAbsolutePath)
         .toList
   } else {
     args.toList
@@ -178,6 +178,9 @@ object PngDissectorApp extends App {
   files.foreach { fileName =>
     val outFileName = fileName.replace("png", "redlines.png")
     val outJsonFile = fileName.replace("png", "boxes.json")
+    val inAnnotationFile = fileName.replace("png", "png-annotation.json")
+    val outImgPath = fileName.replace("png", "output.png")
+
     val pngDissector = new PngDissector(ImageIO.read(new File(fileName)))
     val img = pngDissector.img
     val otherDissector = new RecursiveDissector(pngDissector.img)
@@ -187,8 +190,12 @@ object PngDissectorApp extends App {
     val redImg = BoxWriter.writeBoxes(img, outBoxes)
 
     BoxWriter.writeAllBoxes(outBoxes, outJsonFile)
-    val inBoxes = BoxWriter.readAllBoxes(outJsonFile)
+//    val inBoxes = BoxWriter.readAllBoxes(outJsonFile)
     ImageIO.write(redImg, "png", new File(outFileName))
+
+
+    BoxWriter.visualizeResults(img, outBoxes, BoxWriter.boxFromAnnotation(inAnnotationFile), outImgPath)
+
   }
 }
 
