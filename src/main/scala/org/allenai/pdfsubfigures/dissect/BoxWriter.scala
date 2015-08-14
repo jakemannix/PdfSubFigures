@@ -11,17 +11,7 @@ object BoxWriter extends DefaultJsonProtocol {
 
   def drawBox(img: BufferedImage, box: Box): BufferedImage = {
     def setRed(x: Int, y: Int) {
-      try {
-        if (true || (x > 0 && x < img.getWidth && y > 0 && y < img.getHeight)) {
-          img.setRGB(x, y, Color.RED.getRGB)
-        }
-      } catch {
-        case e: Exception => {
-          val s = s"$x, $y, ${img.getWidth}, ${img.getHeight}"
-          println(s, e)
-          throw e
-        }
-      }
+      img.setRGB(x, y, Color.RED.getRGB)
     }
     (box.xStart until box.xEnd).foreach { x =>
       setRed(x, box.yStart + 1)

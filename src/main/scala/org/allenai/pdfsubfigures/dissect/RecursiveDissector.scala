@@ -29,6 +29,14 @@ class RecursiveDissector(img: BufferedImage) {
   }
 
   def split(box: Box): List[Box] = {
+    val possibleSplits = findPossibleSplit(box)
+    val bestSplitOption = bestSplit(possibleSplits, box)
+    if (bestSplitOption.isDefined) { // found a high scoring split, let's split on it
+      val (firstBox, secondBox) = subFiguresFor(box, bestSplitOption.get)
+      split(firstBox) ++ split(secondBox)
+    } else {
+      List(box)
+    }
     val bestSplitFound = bestSplit(findPossibleSplit(box), box).map(split => subFiguresFor(box, split))
     bestSplitFound.map { case (box1, box2) => split(box1) ++ split(box2) }.getOrElse(List(box))
   }
