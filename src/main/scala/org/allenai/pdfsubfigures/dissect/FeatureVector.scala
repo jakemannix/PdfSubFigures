@@ -34,5 +34,6 @@ class FeatureVector(val split: Split, val box: Box) {
     val blankCoverageWeight = 0
 
     return if (smallestDimension > 20 && aspectRatio < 0.47) widthWeight*width.toDouble else 0
+//    return width
   }
 }

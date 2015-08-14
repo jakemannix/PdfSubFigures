@@ -93,6 +93,7 @@ class PngDissector(val img: BufferedImage) {
   }
 
   def findSplitGuesses(box: Box): List[Split] = {
+
     val colSplits = findWhiteColumnSplits(box)
     val rowSplits = findWhiteRowSplits(box)
     val guesses = colSplits ++ rowSplits
@@ -141,6 +142,10 @@ object PngDissector {
       Split(l(0), l(1), isVertical)
     ).toList
     res.filterNot(s => s.start < 0 || s.end < 0)
+  }
+
+  def meanPixelBrightness(img: BufferedImage, box: Box): Double = {
+
   }
 
 }

@@ -24,11 +24,11 @@ object BoxWriter extends DefaultJsonProtocol {
       }
     }
     (box.xStart until box.xEnd).foreach { x =>
-      setRed(x, box.yStart + 1)
+      setRed(x, box.yStart)
       setRed(x, box.yEnd - 1)
     }
     (box.yStart until box.yEnd).foreach { y =>
-      setRed(box.xStart + 1, y)
+      setRed(box.xStart, y)
       setRed(box.xEnd - 1, y)
     }
     img

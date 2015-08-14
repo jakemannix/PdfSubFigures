@@ -8,8 +8,9 @@ class RecursiveDissector(img: BufferedImage) {
 
   def bestSplit(splits: List[Split], box: Box) : Option[Split] = {
     val features = splits.map(x => (x, new FeatureVector(x, box)))
+//    splits.map(x => println(x.width))
     val score = features.map(x => (x._1, x._2.score()))
-    val threshold = 10
+    val threshold = 0.5
     val candidate = score.maxBy(_._2)
     if (candidate._2 > threshold) Some(candidate._1) else None
   }
