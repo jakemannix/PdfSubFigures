@@ -75,15 +75,6 @@ class PngDissector(val img: BufferedImage) {
     ???
   }
 
-  def bestSplit(splits: List[Split], box: Box) : Option[Split] = {
-
-    val features = splits.map(x => (x, new FeatureVector(x, box)))
-    val score = features.map(x => (x._1, x._2.score()))
-    val threshold = 10
-    val candidate = score.maxBy(_._2)
-    if (candidate._2 > threshold) Some(candidate._1) else None
-  }
-
   def reddenWhiteColumns(xStart: Int = 0,
       yStart: Int = 0, xEnd: Int = img.getWidth - 1, yEnd: Int = img.getHeight - 1) = {
     findWhiteColumns(xStart, yStart, xEnd, yEnd).foreach { x =>

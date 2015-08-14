@@ -6,8 +6,13 @@ import org.allenai.pdfsubfigures.geometry.{Split, Box}
 
 class RecursiveDissector(img: BufferedImage) {
 
-  def findBestSplit(box: Box): Option[Split] = {
-    ???
+  def bestSplit(splits: List[Split], box: Box) : Option[Split] = {
+
+    val features = splits.map(x => (x, new FeatureVector(x, box)))
+    val score = features.map(x => (x._1, x._2.score()))
+    val threshold = 10
+    val candidate = score.maxBy(_._2)
+    if (candidate._2 > threshold) Some(candidate._1) else None
   }
 
   def subFiguresFor(box: Box, split: Split): (Box, Box) = {
@@ -18,8 +23,12 @@ class RecursiveDissector(img: BufferedImage) {
     }
   }
 
+  def findPossibleSplit(box: Box): List[Split] = {
+    ???
+  }
+
   def split(box: Box): List[Box] = {
-    val bestSplit = findBestSplit(box).map(split => subFiguresFor(box, split))
-    bestSplit.map { case (box1, box2) => split(box1) ++ split(box2) }.getOrElse(List(box))
+    val bestSplitFound = bestSplit(findPossibleSplit(box), box).map(split => subFiguresFor(box, split))
+    bestSplitFound.map { case (box1, box2) => split(box1) ++ split(box2) }.getOrElse(List(box))
   }
 }
