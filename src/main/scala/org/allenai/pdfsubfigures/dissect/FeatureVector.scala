@@ -1,7 +1,5 @@
 package org.allenai.pdfsubfigures.dissect
 
-import java.awt.image.BufferedImage
-
 import org.allenai.pdfsubfigures.geometry.{Box, Split}
 
 class FeatureVector(val split: Split, val box: Box) {
@@ -14,7 +12,7 @@ class FeatureVector(val split: Split, val box: Box) {
 
   val width = split.width
   val aspectRatio = boxChild1.height/boxChild1.width
-  val blankCoverage = split.width * (if (split.isVertical) box.height else box.width)
+  val blankCoverage = split.width / (if (split.isVertical) box.width else box.height)
   val absoluteArea = math.min(boxChild1.width*boxChild1.height, boxChild2.width*boxChild2.height)
   val smallestDimension = math.min(math.min(boxChild1.height, boxChild1.width),math.min(boxChild2.height, boxChild2.width))
 
