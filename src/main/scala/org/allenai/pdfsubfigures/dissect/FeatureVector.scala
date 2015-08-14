@@ -10,10 +10,10 @@ class FeatureVector(val split: Split, val box: Box) {
   val boxChild2 = if(split.isVertical) {Box(split.end, box.xEnd, box.yStart, box.yEnd) }
                   else {Box(box.xStart, box.xEnd, split.end, box.yEnd)}
 
-  val width = split.width
-  val aspectRatio = boxChild1.height/boxChild1.width
-  val blankCoverage = split.width / (if (split.isVertical) box.width else box.height)
-  val absoluteArea = math.min(boxChild1.width*boxChild1.height, boxChild2.width*boxChild2.height)
+  val width = split.width.toDouble
+  val aspectRatio = boxChild1.height.toDouble/boxChild1.width.toDouble
+  val blankCoverage = split.width.toDouble / (if (split.isVertical) box.width.toDouble else box.height.toDouble)
+  val absoluteArea = math.min(boxChild1.width*boxChild1.height.toDouble, boxChild2.width*boxChild2.height.toDouble)
   val smallestDimension = math.min(math.min(boxChild1.height, boxChild1.width),math.min(boxChild2.height, boxChild2.width))
 
   /**
@@ -26,7 +26,7 @@ class FeatureVector(val split: Split, val box: Box) {
     val aspectRatioWeight = 0
     val blankCoverageWeight = 0
 
-    return (if (smallestDimension > 20) 1 else 0)*
-      widthWeight*width
+    return (if (smallestDimension > 20) 1.0 else 0.0)*
+      widthWeight*width.toDouble
   }
 }
