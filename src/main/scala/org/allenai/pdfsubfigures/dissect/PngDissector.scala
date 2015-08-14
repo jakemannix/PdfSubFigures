@@ -14,7 +14,7 @@ class PngDissector(val img: BufferedImage) {
    * @param y height at which to draw the line
    * @param xStart
    * @param xEnd
-   * @rgb color
+   * @param rgb color
    * @return
    */
   def addHorizLine(y: Int, xStart: Int = 0, xEnd: Int = img.getWidth - 1,
