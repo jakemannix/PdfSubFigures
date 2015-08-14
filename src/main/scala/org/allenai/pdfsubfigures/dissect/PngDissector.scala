@@ -145,6 +145,7 @@ object PngDissector {
 object PngDissectorApp extends App {
   args.foreach { fileName =>
     val outFileName = fileName.replace("png", "redlines.png")
+    val outJsonFile = fileName.replace("png", "boxes.json")
     val pngDissector = new PngDissector(ImageIO.read(new File(fileName)))
     val img = pngDissector.img
     val otherDissector = new RecursiveDissector(pngDissector.img)
@@ -152,6 +153,8 @@ object PngDissectorApp extends App {
       xEnd = img.getWidth, yEnd = img.getHeight)
     val outBoxes = otherDissector.split(startBox)
     val redImg = BoxWriter.writeBoxes(img, outBoxes)
+    BoxWriter.writeAllBoxes(outBoxes, outJsonFile)
+    val inBoxes = BoxWriter.readAllBoxes(outJsonFile)
     ImageIO.write(redImg, "png", new File(outFileName))
   }
 }

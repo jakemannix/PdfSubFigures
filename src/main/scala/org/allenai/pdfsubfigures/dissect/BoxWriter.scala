@@ -7,6 +7,8 @@ import java.io.{PrintWriter, File, FileWriter, BufferedWriter}
 import spray.json._
 import org.allenai.pdfsubfigures.geometry.Box
 
+import scala.io.Source
+
 object BoxWriter extends DefaultJsonProtocol {
 
   def drawBox(img: BufferedImage, box: Box): BufferedImage = {
@@ -42,6 +44,12 @@ object BoxWriter extends DefaultJsonProtocol {
     val w = new PrintWriter(outPath)
     val s = boxes.map(_.toJson.prettyPrint).mkString("[", ", ", "]")
     w.println(s)
+    w.close()
+  }
+
+  def readAllBoxes(inPath: String): Array[Box] = {
+    implicit val boxFormat = jsonFormat(Box.apply, "xStart", "yStart", "xEnd", "yEnd")
+    Source.fromFile(inPath).mkString.parseJson.convertTo[Array[Box]]
   }
 
   def boxFromAnnotation(inpath: String) : Seq[Box] = {
