@@ -53,14 +53,14 @@ object BoxWriter extends DefaultJsonProtocol {
     w.close()
   }
 
-  def readAllBoxes(inPath: String): Array[Box] = {
+  def readAllBoxes(inPath: String): List[Box] = {
     implicit val boxFormat = jsonFormat(Box.apply, "xStart", "yStart", "xEnd", "yEnd")
-    Source.fromFile(inPath).mkString.parseJson.convertTo[Array[Box]]
+    Source.fromFile(inPath).mkString.parseJson.convertTo[Array[Box]].toList
   }
 
-  def boxFromAnnotation(inpath: String) : Seq[Box] = {
+  def boxFromAnnotation(inpath: String) : List[Box] = {
     val annotations = scala.io.Source.fromFile(inpath).mkString.parseJson.asJsObject.fields("annotations").asInstanceOf[JsArray].elements
-    for (annotation <- annotations) yield {
+    (for (annotation <- annotations) yield {
       val boxJson = annotation.asJsObject.fields("bounds").asJsObject.fields("coords").asInstanceOf[JsArray]
 
       println(boxJson.elements(0).asJsObject.fields("x").toString.toDouble.floor.toInt)
@@ -69,7 +69,7 @@ object BoxWriter extends DefaultJsonProtocol {
         boxJson.elements(0).asJsObject.fields("y").toString.toDouble.floor.toInt,
         boxJson.elements(1).asJsObject.fields("x").toString.toDouble.ceil.toInt,
         boxJson.elements(1).asJsObject.fields("y").toString.toDouble.ceil.toInt)
-    }
+    }).toList
   }
 
   def visualizeResults (img : BufferedImage, annotation: List[Box], result: List[Box], outpath: String): Unit = {

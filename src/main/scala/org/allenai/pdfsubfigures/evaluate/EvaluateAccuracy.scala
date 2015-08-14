@@ -1,6 +1,7 @@
 package org.allenai.pdfsubfigures.evaluate
 
 import java.io.File
+import javax.imageio.ImageIO
 
 import org.allenai.pdfsubfigures.dissect.{BoxWriter, RecursiveDissector, PngDissector}
 import org.allenai.pdfsubfigures.geometry.Box
@@ -20,6 +21,16 @@ object EvaluateAccuracy {
     println(evalFoundBoxes(List(bb1,bb2),List(bb1,bb2)))
     println(evalFoundBoxes(List(bb1,bb2),List(bb1)))
     */
+
+    val img = ImageIO.read(new File(args(0)))
+    val results = BoxWriter.readAllBoxes(args(1))
+    val annotations = BoxWriter.boxFromAnnotation(args(2))
+    val outpath = args(4)
+
+    if (args(3).toBoolean) {
+      BoxWriter.visualizeResults(img, results, annotations, outpath)
+    }
+
   }
 
   // True positives, false positives, false negatives
