@@ -57,9 +57,11 @@ class PngDissector(val img: BufferedImage) {
   def findWhiteColumns(xStart: Int = 0,
       yStart: Int = 0,
       xEnd: Int = img.getWidth - 1,
-      yEnd: Int = img.getHeight - 1): List[Int] =
-    (xStart until xEnd).filter(x => (yStart until yEnd).forall(y =>
+      yEnd: Int = img.getHeight - 1): List[Int] = {
+    val cols = (xStart until xEnd).filter(x => (yStart until yEnd).forall(y =>
       isWhite(new Color(img.getRGB(x, y))))).toList
+    cols
+  }
 
   def findWhiteRows(xStart: Int = 0,
       yStart: Int = 0,
@@ -68,11 +70,33 @@ class PngDissector(val img: BufferedImage) {
     (yStart until yEnd).filter(y => (xStart until xEnd).forall(x =>
       isWhite(new Color(img.getRGB(x, y))))).toList
 
-  def findWhiteColumnEdges(xStart: Int = 0,
-      yStart: Int = 0,
-      xEnd: Int = img.getWidth - 1,
-      yEnd: Int = img.getHeight - 1): List[Int] = {
-    ???
+
+  def findWhiteColumns(box: Box): List[Int] = {
+    findWhiteColumns(xStart = box.xStart, xEnd = box.xEnd, yStart = box.yStart, yEnd = box.yEnd)
+  }
+
+  def findWhiteRows(box: Box): List[Int] = {
+    findWhiteRows(xStart = box.xStart, xEnd = box.xEnd, yStart = box.yStart, yEnd = box.yEnd)
+  }
+
+  def findWhiteColumnSplits(box: Box): List[Split] = {
+    val splits = PngDissector.rowsToSplits(findWhiteColumns(box).toArray, isVertical = true)
+    splits
+  }
+
+  def findWhiteRowSplits(box: Box): List[Split] = {
+    val splits = PngDissector.rowsToSplits(findWhiteColumns(box).toArray, isVertical = false)
+    if (true) {
+      println("")
+    }
+    splits
+  }
+
+  def findSplitGuesses(box: Box): List[Split] = {
+    val colSplits = findWhiteColumnSplits(box)
+    val rowSplits = findWhiteRowSplits(box)
+    val guesses = colSplits ++ rowSplits
+    guesses
   }
 
   def reddenWhiteColumns(xStart: Int = 0,
@@ -104,14 +128,32 @@ class PngDissector(val img: BufferedImage) {
 
 object PngDissector {
   def apply(fileName: String) = new PngDissector(ImageIO.read(new File(fileName)))
+
+  def rowsToSplits(ints: Array[Int], isVertical: Boolean): List[Split] = {
+    val pairs =
+      ints.zipWithIndex.map { case(v,i) => if (i==0) { (v,v) } else { (v, v - ints(i-1) - 1)} }
+    val flattened = pairs.flatMap {
+      case ((x, 0)) => None
+      case ((x, offset)) => Some((x, offset))
+    }
+    val magic = flattened.flatMap(p => List(p._1 - p._2 - 1, p._1))
+    val res = (List(ints(0)) ++ magic.toList ++ List(ints(ints.length - 1))).grouped(2).map(l =>
+      Split(l(0), l(1), isVertical)
+    ).toList
+    res.filterNot(s => s.start < 0 || s.end < 0)
+  }
+
 }
 
 object PngDissectorApp extends App {
   val fileName = args(0)
   val outFileName = fileName.replace("png", "redlines.png")
   val pngDissector = new PngDissector(ImageIO.read(new File(fileName)))
-  val whiteColumns = pngDissector.findWhiteColumns()
-  val whiteRows = pngDissector.findWhiteRows()
-  val outImg = pngDissector.reddenWhiteColumns().reddenWhiteRows()
-  ImageIO.write(outImg.img, "png", new File(outFileName))
+  val img = pngDissector.img
+  val otherDissector = new RecursiveDissector(pngDissector.img)
+  val startBox = Box(xStart = 0, yStart = 0,
+    xEnd = img.getWidth, yEnd = img.getHeight)
+  val outBoxes = otherDissector.split(startBox)
+  val redImg = BoxWriter.writeBoxes(img, outBoxes)
+  ImageIO.write(redImg, "png", new File(outFileName))
 }
