@@ -158,3 +158,4 @@ object PngDissectorApp extends App {
     ImageIO.write(redImg, "png", new File(outFileName))
   }
 }
+
