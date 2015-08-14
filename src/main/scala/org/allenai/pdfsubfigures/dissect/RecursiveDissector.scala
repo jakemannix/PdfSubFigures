@@ -1,6 +1,8 @@
 package org.allenai.pdfsubfigures.dissect
 
 import java.awt.image.BufferedImage
+import java.io.File
+import javax.imageio.ImageIO
 
 import org.allenai.pdfsubfigures.geometry.{Split, Box}
 
@@ -42,6 +44,23 @@ class RecursiveDissector(img: BufferedImage) {
 
 object RecursiveDissector {
 
+  def findBoxes(pngFileName: String): List[Box] = {
+    val pngDissector = new PngDissector(ImageIO.read(new File(pngFileName)))
+    val img = pngDissector.img
+    val otherDissector = new RecursiveDissector(pngDissector.img)
+    val startBox = Box(xStart = 0, yStart = 0,
+      xEnd = img.getWidth, yEnd = img.getHeight)
+    otherDissector.split(startBox)
+  }
+
+  def crop(pngFileName: String)(box: Box): Box = {
+    val pngDissector = new PngDissector(ImageIO.read(new File(pngFileName)))
+    val img = pngDissector.img
+    val otherDissector = new RecursiveDissector(pngDissector.img)
+    val (vertSplits, horizSplits) = otherDissector.findPossibleSplit(box).partition(_.isVertical)
+    ???
+  }
+
   def subFiguresFor(box: Box, splits: List[Split]): List[Box] = {
     val childBoxes = for (i <- 0 to splits.length) yield {
       if (splits(0).isVertical) {
@@ -52,7 +71,7 @@ object RecursiveDissector {
           box.copy(xStart = splits(i - 1).end)
         }
         else {
-          box.copy(xStart = splits(i-1).end, xEnd = splits(i).start)
+          box.copy(xStart = splits(i - 1).end, xEnd = splits(i).start)
         }
       } else {
         if (i == 0) {
@@ -62,7 +81,7 @@ object RecursiveDissector {
           box.copy(yStart = splits(i - 1).end)
         }
         else {
-          box.copy(yStart = splits(i-1).end, yEnd = splits(i).start)
+          box.copy(yStart = splits(i - 1).end, yEnd = splits(i).start)
         }
       }
     }

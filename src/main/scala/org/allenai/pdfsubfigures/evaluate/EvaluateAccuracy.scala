@@ -1,4 +1,8 @@
 package org.allenai.pdfsubfigures.evaluate
+
+import java.io.File
+
+import org.allenai.pdfsubfigures.dissect.{BoxWriter, RecursiveDissector, PngDissector}
 import org.allenai.pdfsubfigures.geometry.Box
 import scala.util.control.Breaks._
 
@@ -48,6 +52,29 @@ object EvaluateAccuracy {
 
   def area(b: Box): Int = {
     (b.xEnd-b.xStart)*(b.yEnd-b.yStart)
+  }
+}
+
+object Evaluator extends App {
+
+  val perPngEvaluations =
+    listPngs(args(0)).map { pngFile =>
+      val goldFile = goldFileFor(pngFile)
+      val predictedBoxes = RecursiveDissector.findBoxes(pngFile.getAbsolutePath)
+      val goldBoxes = BoxWriter.boxFromAnnotation(goldFile.getAbsolutePath)
+      val (truePos, falsePos, falseNeg) =
+        EvaluateAccuracy.evalFoundBoxes(predictedBoxes, goldBoxes.toList)
+      val result = s"${pngFile.getName}: TP = $truePos, FP = $falsePos, FN = $falseNeg"
+      println(result)
+      (pngFile.getName, truePos, falsePos, falseNeg)
+    }
+
+
+  def goldFileFor(pngFile: File): File = {
+    new File(pngFile.getAbsolutePath.replace("png", "png-annotation.json"))
+  }
+  def listPngs(dir: String): Array[File] = {
+    new File(dir).listFiles().filter(f => f.isFile && f.getPath.endsWith("png"))
   }
 }
 
