@@ -45,8 +45,8 @@ class FeatureVector(val splits: List[Split], val box: Box, val img: BufferedImag
     val widthWeight = 1
     val aspectRatioWeight = 0
     val blankCoverageWeight = 0
-//&& symmetry < 0.4 && maxBrightnessDifference < 2
-    if (smallestDimension > 10 ) {
+
+    if (smallestDimension > 100 && symmetry < 0.4 && maxBrightnessDifference < 2) {
       if (splitWidth.toDouble == 0) {
         1
       } else {
